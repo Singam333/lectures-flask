@@ -1,5 +1,7 @@
 from flask import request, Response
 import json
+import jwt
+from os import environ
 from passlib.hash import sha256_crypt
 
 from . import apis
@@ -35,6 +37,42 @@ def register():
 
         return Response(
             json.dumps({"status": "success", "message": "Succesfully registred"}),
+            mimetype="application/json",
+        )
+    except Exception:
+        return Response(
+            json.dumps({"status": "error", "message": "Something went wrong"}),
+            status=422,
+            mimetype="application/json",
+        )
+
+
+@apis.route("/login", methods=["POST"])
+def login():
+    try:
+        data = request.json
+        email, password = data["email"], data["password"]
+
+        users = User.query.filter_by(email=email)
+        if users.count() == 0:
+            return Response(
+                json.dumps({"status": "error", "message": "Email is not registered"}),
+                mimetype="application/json",
+            )
+
+        user = users.first()
+        if not sha256_crypt.verify(password, user.password):
+            return Response(
+                json.dumps({"status": "error", "message": "Invalid password"}),
+                mimetype="application/json",
+            )
+
+        jwt_secret = environ.get("JWT_SECRET")
+        bytes_token = jwt.encode(
+            {"email": user.email}, jwt_secret, algorithm="HS256"
+        )
+        return Response(
+            json.dumps({"status": "success", "token": bytes_token.decode()}),
             mimetype="application/json",
         )
     except Exception:
