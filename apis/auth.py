@@ -1,13 +1,14 @@
-from flask import request, Response
-import json
+from flask import request
 import jwt
 from os import environ
 from passlib.hash import sha256_crypt
 
 from . import apis
+import constants
 from models import db
 from models.auth import User
 from utils.validation import validate_email
+from utils.request import response
 
 
 @apis.route("/register", methods=["POST"])
@@ -17,16 +18,10 @@ def register():
         email, password = data["email"], data["password"]
 
         if User.query.filter_by(email=email).count() > 0:
-            return Response(
-                json.dumps({"status": "error", "message": "Email already registered"}),
-                mimetype="application/json",
-            )
+            return response(status=constants.ERROR, message=constants.EMAIL_ALREADY_EXISTS)
 
         if not validate_email(email):
-            return Response(
-                json.dumps({"status": "error", "message": "Email is invalid"}),
-                mimetype="application/json",
-            )
+            return response(status=constants.ERROR, message=constants.INVALID_EMAIL)
 
         user = User()
         user.email = email
@@ -35,15 +30,10 @@ def register():
         db.session.add(user)
         db.session.commit()
 
-        return Response(
-            json.dumps({"status": "success", "message": "Succesfully registred"}),
-            mimetype="application/json",
-        )
+        return response(status=constants.SUCCESS, message=constants.REGISTRATION_SUCCESS)
     except Exception:
-        return Response(
-            json.dumps({"status": "error", "message": "Something went wrong"}),
-            status=422,
-            mimetype="application/json",
+        return response(
+            status=constants.ERROR, message=constants.SOMETHING_WENT_WRONG, status_code=422
         )
 
 
@@ -55,29 +45,19 @@ def login():
 
         users = User.query.filter_by(email=email)
         if users.count() == 0:
-            return Response(
-                json.dumps({"status": "error", "message": "Email is not registered"}),
-                mimetype="application/json",
-            )
+            return response(status=constants.ERROR, message=constants.EMAIL_NOT_REGISTERED)
 
         user = users.first()
         if not sha256_crypt.verify(password, user.password):
-            return Response(
-                json.dumps({"status": "error", "message": "Invalid password"}),
-                mimetype="application/json",
-            )
+            return response(status=constants.ERROR, message=constants.INVALID_PASSWORD)
 
         jwt_secret = environ.get("JWT_SECRET")
-        bytes_token = jwt.encode(
-            {"email": user.email}, jwt_secret, algorithm="HS256"
-        )
-        return Response(
-            json.dumps({"status": "success", "token": bytes_token.decode()}),
-            mimetype="application/json",
+        bytes_token = jwt.encode({"email": user.email}, jwt_secret, algorithm="HS256")
+
+        return response(
+            status=constants.SUCCESS, message=constants.LOGIN_SUCCESS, token=bytes_token.decode()
         )
     except Exception:
-        return Response(
-            json.dumps({"status": "error", "message": "Something went wrong"}),
-            status=422,
-            mimetype="application/json",
+        return response(
+            status=constants.ERROR, message=constants.SOMETHING_WENT_WRONG, status_code=422
         )
