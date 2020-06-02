@@ -17,7 +17,7 @@ from utils.validation import validate_email
 @validate_token
 def upload():
     try:
-        f = request.files['file']
+        f = request.files["file"]
 
         key = upload_to_cloud(f)
         video = Video()
@@ -28,7 +28,22 @@ def upload():
         db.session.add(video)
         db.session.commit()
 
-        return response(status=constants.SUCCESS, message=constants.REGISTRATION_SUCCESS)
+        return response(status=constants.SUCCESS, message=constants.UPLOAD_SUCCESS)
+    except Exception:
+        return response(
+            status=constants.ERROR, message=constants.SOMETHING_WENT_WRONG, status_code=422
+        )
+
+
+@apis.route("/videos", methods=["GET"])
+@validate_token
+def list_videos():
+    try:
+        result = Video.query.filter_by(user_id=request.user_id).all()
+        videos = [video.to_dict() for video in result]
+        return response(
+            status=constants.SUCCESS, message=constants.GET_LIST_SUCCESS, videos=videos
+        )
     except Exception:
         return response(
             status=constants.ERROR, message=constants.SOMETHING_WENT_WRONG, status_code=422

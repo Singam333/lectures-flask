@@ -14,3 +14,5 @@ INVALID_TOKEN = "Invalid token"
 # Success messages
 REGISTRATION_SUCCESS = "Succesfully registred"
 LOGIN_SUCCESS = "LogIn successful"
+GET_LIST_SUCCESS = "Fetched videos successfully"
+UPLOAD_SUCCESS = "Video upload successful"
