@@ -17,3 +17,5 @@ class Config:
     FLASK_ENV = "development"
     DEBUG = True
 
+    # Secrets
+    SECRET_KEY = environ.get("SECRET_KEY")
