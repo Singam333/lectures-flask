@@ -7,12 +7,14 @@ from . import apis
 import constants
 from models import db
 from models.video import Video
+from middleware.auth import validate_token
 from utils.request import response
 from utils.upload import upload_to_cloud
 from utils.validation import validate_email
 
 
 @apis.route("/upload", methods=["POST"])
+@validate_token
 def upload():
     try:
         f = request.files['file']
@@ -27,8 +29,7 @@ def upload():
         db.session.commit()
 
         return response(status=constants.SUCCESS, message=constants.REGISTRATION_SUCCESS)
-    except Exception as e:
-        print(e)
+    except Exception:
         return response(
             status=constants.ERROR, message=constants.SOMETHING_WENT_WRONG, status_code=422
         )
