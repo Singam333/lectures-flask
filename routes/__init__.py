@@ -1,6 +1,6 @@
 from flask import Blueprint
 
-apis = Blueprint('apis', __name__)
+routes = Blueprint('apis', __name__)
 
 from .auth import *
 from .video import *

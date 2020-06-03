@@ -4,7 +4,6 @@ import jwt
 from os import environ
 from passlib.hash import sha256_crypt
 
-from . import apis
 import constants
 from models import db
 from models.auth import User
@@ -12,7 +11,6 @@ from utils.validation import validate_email
 from utils.request import response
 
 
-@apis.route("/register", methods=["POST"])
 def register():
     try:
         data = request.json
@@ -37,8 +35,6 @@ def register():
             status=constants.ERROR, message=constants.SOMETHING_WENT_WRONG, status_code=422
         )
 
-
-@apis.route("/login", methods=["POST"])
 def login():
     try:
         data = request.json

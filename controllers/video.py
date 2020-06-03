@@ -3,18 +3,14 @@ import jwt
 from os import environ
 from passlib.hash import sha256_crypt
 
-from . import apis
 import constants
 from models import db
 from models.video import Video
-from middleware.auth import validate_token
 from utils.request import response
 from utils.upload import upload_to_cloud, build_url
 from utils.validation import validate_email
 
 
-@apis.route("/upload", methods=["POST"])
-@validate_token
 def upload():
     try:
         f = request.files["file"]
@@ -34,9 +30,6 @@ def upload():
             status=constants.ERROR, message=constants.SOMETHING_WENT_WRONG, status_code=422
         )
 
-
-@apis.route("/videos", methods=["GET"])
-@validate_token
 def list_videos():
     try:
         result = Video.query.filter_by(user_id=request.user_id).all()
