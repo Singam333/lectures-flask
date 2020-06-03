@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from flask import request
 import jwt
 from os import environ
@@ -52,7 +53,11 @@ def login():
             return response(status=constants.ERROR, message=constants.INVALID_PASSWORD)
 
         jwt_secret = environ.get("JWT_SECRET")
-        bytes_token = jwt.encode({"user_id": user.id}, jwt_secret, algorithm="HS256")
+        bytes_token = jwt.encode(
+            {"exp": datetime.utcnow() + timedelta(days=constants.EXPIRY_DAYS), "user_id": user.id},
+            jwt_secret,
+            algorithm="HS256",
+        )
 
         return response(
             status=constants.SUCCESS, message=constants.LOGIN_SUCCESS, token=bytes_token.decode()

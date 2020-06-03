@@ -17,6 +17,8 @@ def validate_token(f):
             decoded_jwt = jwt.decode(token, secret, algorithms=["HS256"])
             request.user_id = decoded_jwt["user_id"]
             return f(*args, **kwargs)
+        except jwt.ExpiredSignatureError:
+            return response(constants.ERROR, constants.TOKEN_EXPIRED, status_code=401)
         except jwt.exceptions.DecodeError:
             return response(constants.ERROR, constants.INVALID_TOKEN, status_code=401)
         except Exception:
