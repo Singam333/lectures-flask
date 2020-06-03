@@ -9,7 +9,7 @@ from models import db
 from models.video import Video
 from middleware.auth import validate_token
 from utils.request import response
-from utils.upload import upload_to_cloud
+from utils.upload import upload_to_cloud, build_url
 from utils.validation import validate_email
 
 
@@ -41,9 +41,9 @@ def list_videos():
     try:
         result = Video.query.filter_by(user_id=request.user_id).all()
         videos = [video.to_dict() for video in result]
-        return response(
-            status=constants.SUCCESS, message=constants.GET_LIST_SUCCESS, videos=videos
-        )
+        videos_with_urls = [{**video, "url": build_url(video["key"])} for video in videos]
+
+        return response(status=constants.SUCCESS, message=constants.GET_LIST_SUCCESS, videos=videos_with_urls)
     except Exception:
         return response(
             status=constants.ERROR, message=constants.SOMETHING_WENT_WRONG, status_code=422
