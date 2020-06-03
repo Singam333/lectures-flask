@@ -24,11 +24,16 @@ def upload():
         db.session.add(video)
         db.session.commit()
 
-        return response(status=constants.SUCCESS, message=constants.UPLOAD_SUCCESS)
+        video_with_url = {**(video.to_dict()), "url": build_url(video.key)}
+
+        return response(
+            status=constants.SUCCESS, message=constants.UPLOAD_SUCCESS, video=video_with_url
+        )
     except Exception:
         return response(
             status=constants.ERROR, message=constants.SOMETHING_WENT_WRONG, status_code=422
         )
+
 
 def list_videos():
     try:
@@ -36,7 +41,9 @@ def list_videos():
         videos = [video.to_dict() for video in result]
         videos_with_urls = [{**video, "url": build_url(video["key"])} for video in videos]
 
-        return response(status=constants.SUCCESS, message=constants.GET_LIST_SUCCESS, videos=videos_with_urls)
+        return response(
+            status=constants.SUCCESS, message=constants.GET_LIST_SUCCESS, videos=videos_with_urls
+        )
     except Exception:
         return response(
             status=constants.ERROR, message=constants.SOMETHING_WENT_WRONG, status_code=422
